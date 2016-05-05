@@ -18,8 +18,14 @@ class Scan
 	int precursorCharge;
 	int & fragmentScanNumbers;
 	DataPoint & dataPoints;
+	DataPoint highestDataPoint;
 public:
 	Scan();
 	~Scan();
+	double getRetentionTime();
+	double getPrecursorMz();
+	int getScanNumber();
+	DataPoint getHighestDataPoint();
+	int getPrecursorCharge();
 };
 

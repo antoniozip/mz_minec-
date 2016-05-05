@@ -1,8 +1,10 @@
 #include "stdafx.h"
 #include "Chromatogram.h"
 #include "RawDataFile.h"
+#include "ScanUtils.h"
 #include <iostream>
 #include <string>
+#include <array>
 #include <unordered_map>
 #include <fstream>
 #include <vector>
@@ -94,7 +96,7 @@ RawDataFile Chromatogram::getDataFile() {
 	return dataFile;
 }
 
-double Chromatogram::calcMedian(std::vector<int> scores)
+double Chromatogram::calcMedian(std::vector<double> scores)
 {
 	double median;
 	std::size_t size = scores.size();
@@ -113,14 +115,17 @@ double Chromatogram::calcMedian(std::vector<int> scores)
 
 void Chromatogram::finishChromatogram() {
 
-	vector<int> allScanNumbers = dataPointsMap.enum_keys();
+	std::vector<int> allScanNumbers;
+	for (std::unordered_map<int, DataPoint>::iterator it = dataPointsMap.begin(); it != dataPointsMap.end(); ++it)
+		allScanNumbers.push_back(it->first);
+		
 	std::sort(allScanNumbers.begin(), allScanNumbers.end());
 
-	// Calculate median m/z
-	double allMzValues[] = double[allScanNumbers.size()];
+	
+	std::vector<double> allMzValues;
 	for (int i = 0; i < allScanNumbers.size(); i++) 
 	{
-		allMzValues[i] = dataPointsMap.[allScanNumbers[i]].getMZ();
+		allMzValues.push_back(dataPointsMap.[allScanNumbers[i]].getMZ());
 	}
 	mz = calcMedian(allMzValues);
 
@@ -137,12 +142,12 @@ void Chromatogram::finishChromatogram() {
 		dataPointsMap.emplace(allScanNumbers[i], mzPeak);
 
 		if (i == 0) {
-			rawDataPointsIntensityRange = Range.singleton(mzPeak.getIntensity());
-			rawDataPointsMZRange = Range.singleton(mzPeak.getMZ());
+			rawDataPointsIntensityRange = boost::numeric::interval<double>(mzPeak.getIntensity());
+			rawDataPointsMZRange = boost::numeric::interval<double>(mzPeak.getMz());
 		}
 		else {
-			rawDataPointsIntensityRange = rawDataPointsIntensityRange.span(Range.singleton(mzPeak.getIntensity()));
-			rawDataPointsMZRange = rawDataPointsMZRange.span(Range.singleton(mzPeak.getMZ()));
+			rawDataPointsIntensityRange = rawDataPointsIntensityRange.hull(rawDataPointsIntensityRange.lower(), mzPeak.getIntensity());
+			rawDataPointsMZRange = rawDataPointsMZRange.hull(rawDataPointsMZRange.lower(), mzPeak.getMz());
 		}
 
 		if (height < mzPeak.getIntensity()) {
@@ -156,32 +161,102 @@ void Chromatogram::finishChromatogram() {
 	area = 0;
 	for (int i = 1; i < allScanNumbers.size(); i++) {
 		// For area calculation, we use retention time in seconds
-		double previousRT = dataFile.getScan(allScanNumbers[i - 1]).getRetentionTime() * 60d;
-		double currentRT = dataFile.getScan(allScanNumbers[i]).getRetentionTime() * 60d;
-		double previousHeight = dataPointsMap.get(allScanNumbers[i - 1]).getIntensity();
-		double currentHeight = dataPointsMap.get(allScanNumbers[i]).getIntensity();
+		double previousRT = dataFile.getScan(allScanNumbers[i - 1]).getRetentionTime() * 60.000000;
+		double currentRT = dataFile.getScan(allScanNumbers[i]).getRetentionTime() * 60.000000;
+		double previousHeight = dataPointsMap[(allScanNumbers[i - 1])].getIntensity();
+		double currentHeight = dataPointsMap[(allScanNumbers[i])].getIntensity();
 		area += (currentRT - previousRT) * (currentHeight + previousHeight)/ 2;
 	}
 
 	// Update fragment scan
-	fragmentScan = ScanUtils.findBestFragmentScan(dataFile,	dataFile.getDataRTRange(1), rawDataPointsMZRange);
+	ScanUtils su = ScanUtils();
+	fragmentScan = su.findBestFragmentScan(dataFile,dataFile.getDataRTRange(1), rawDataPointsMZRange);
 
 	if (fragmentScan > 0) {
 		Scan fragmentScanObject = dataFile.getScan(fragmentScan);
 		int precursorCharge = fragmentScanObject.getPrecursorCharge();
 		if (precursorCharge > 0)
-			this.charge = precursorCharge;
+			charge = precursorCharge;
 	}
 
 	// Victor Treviño
 	// using allScanNumbers : rawDataPointsRTRange = new
 	// Range(dataFile.getScan(allScanNumbers[0]).getRetentionTime(),
 	// dataFile.getScan(allScanNumbers[allScanNumbers.length-1]).getRetentionTime());
-	rawDataPointsRTRange = Range.closed(minTime, maxTime); // using the
-														   // "cached"
-														   // values
+	rawDataPointsRTRange = boost::numeric::interval<double>(minTime, maxTime); // using the
+														 
+	//buildingSegment = NULL;
+	//lastMzPeak = NULL;
+}
 
-														   // Discard the fields we don't need anymore
-	buildingSegment = null;
-	lastMzPeak = null;
+double Chromatogram::getBuildingSegmentLength() {
+	if (buildingSegment.size() < 2)
+		return 0;
+	int firstScan = buildingSegment.at(1);
+	int lastScan = buildingSegment.at(buildingSegment.size());
+	double firstRT = dataFile.getScan(firstScan).getRetentionTime();
+	double lastRT = dataFile.getScan(lastScan).getRetentionTime();
+	return (lastRT - firstRT);
+}
+
+double Chromatogram::getBuildingFirstTime() {
+	return minTime;
+}
+
+double Chromatogram::getBuildingLastTime() {
+	return maxTime;
+}
+
+int Chromatogram::getNumberOfCommittedSegments() {
+	return numOfCommittedSegments;
+}
+
+void Chromatogram::removeBuildingSegment() {
+	for (int scanNumber : buildingSegment)
+		dataPointsMap.erase(scanNumber);
+	buildingSegment.clear();
+}
+
+void Chromatogram::commitBuildingSegment() {
+	buildingSegment.clear();
+	numOfCommittedSegments++;
+}
+
+//TO BE REVISED
+void Chromatogram::addDataPointsFromChromatogram(Chromatogram ch) {
+	std::unordered_map<int, DataPoint> dPM = ch.dataPointsMap;
+	for (std::unordered_map<int, DataPoint>::iterator it = dPM.begin(); it != dPM.end(); ++it)
+		addMzPeak(it->first,dPM[it->first]);
+}
+
+int Chromatogram::getCharge() {
+	return charge;
+}
+
+void Chromatogram::setCharge(int charge) {
+	charge = charge;
+}
+
+double Chromatogram::getFWHM() {
+	return fwhm;
+}
+
+void Chromatogram::setFWHM(double fwhm) {
+	fwhm = fwhm;
+}
+
+double Chromatogram::getTailingFactor() {
+	return tf;
+}
+
+void Chromatogram::setTailingFactor(double tf) {
+	tf = tf;
+}
+
+double Chromatogram::getAsymmetryFactor() {
+	return af;
+}
+
+void Chromatogram::setAsymmetryFactor(double af) {
+	af = af;
 }

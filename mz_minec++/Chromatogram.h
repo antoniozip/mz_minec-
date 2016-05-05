@@ -26,6 +26,7 @@ class Chromatogram
 	double maxTime = 0;
 	double mzSum = 0;
 	int mzN = 0;
+	boost::numeric::interval<double> rawDataPointsIntensityRange, rawDataPointsMZRange, rawDataPointsRTRange;
 public:
 	Chromatogram(std::string);
 	~Chromatogram();
@@ -43,7 +44,22 @@ public:
 	int getRepresentativeScanNumber();
 	int & getScanNumbers();
 	RawDataFile getDataFile();
-	double calcMedian(std::vector<int>);
+	double calcMedian(std::vector<double>);
 	void finishChromatogram();
+	double getBuildingSegmentLength();
+	double getBuildingFirstTime(); 
+	double getBuildingLastTime();
+	int getNumberOfCommittedSegments();
+	void removeBuildingSegment();
+	void commitBuildingSegment();
+	void addDataPointsFromChromatogram(Chromatogram);
+	int getCharge();
+	void setCharge(int );
+	double getFWHM();
+	void setFWHM(double );
+	double getTailingFactor();
+	void setTailingFactor(double);
+	double getAsymmetryFactor();
+	void setAsymmetryFactor(double);
 };
 
