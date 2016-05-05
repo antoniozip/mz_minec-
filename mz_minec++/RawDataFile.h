@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include "Scan.h"
 #include <boost/numeric/interval.hpp>
 
 class RawDataFile
@@ -8,8 +9,8 @@ class RawDataFile
 	int numOfScan;
 	int msLevels;
 	int &scanNumbers;
-	boost::numberic::interval<double> mzRange;
-	boost::numberic::interval<double> rtRange;
+	boost::numeric::interval<double> mzRange;
+	boost::numeric::interval<double> rtRange;
 	double maxBasePeakIntensity;
 	double maxTotalIonCurrent;
 
@@ -23,12 +24,12 @@ public:
 	int & getMsLevels();
 	int & getScanNumbers();
 	int & getScanNumbers(int);
-	int & getScanNumbers(int, boost::numberic::interval<double>);
+	int & getScanNumbers(int, boost::numeric::interval<double>);
 	Scan getScan(int);
-	boost::numberic::interval<double> getDataMZRange();
-	boost::numberic::interval<double> getDataRTRange();
-	boost::numberic::interval<double> getDataMZRange(int msLevel);
-	boost::numberic::interval<double> getDataRTRange(int msLevel);
+	boost::numeric::interval<double> getDataMZRange();
+	boost::numeric::interval<double> getDataRTRange();
+	boost::numeric::interval<double> getDataMZRange(int msLevel);
+	boost::numeric::interval<double> getDataRTRange(int msLevel);
 	double getDataMaxBasePeakIntensity(int msLevel);
 	double getDataMaxTotalIonCurrent(int msLevel);
 	void close();

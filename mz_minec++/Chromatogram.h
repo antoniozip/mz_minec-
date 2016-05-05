@@ -37,9 +37,9 @@ public:
 	double getHeight();
 	int Chromatogram::getMostIntenseFragmentScanNumber();
 	double getRT();
-	boost::numberic::interval<double> getRawDataPointsIntensityRange();
-	boost::numberic::interval<double> getRawDataPointsMZRange();
-	boost::numberic::interval<double> getRawDataPointsRTRange();
+	boost::numeric::interval<double> getRawDataPointsIntensityRange();
+	boost::numeric::interval<double> getRawDataPointsMZRange();
+	boost::numeric::interval<double> getRawDataPointsRTRange();
 	int getRepresentativeScanNumber();
 	int & getScanNumbers();
 	RawDataFile getDataFile();

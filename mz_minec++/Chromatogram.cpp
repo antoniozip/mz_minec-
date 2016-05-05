@@ -70,15 +70,15 @@ double Chromatogram::getRT() {
 	return rt;
 }
 
-boost::numberic::interval<double> Chromatogram::getRawDataPointsIntensityRange() {
+boost::numeric::interval<double> Chromatogram::getRawDataPointsIntensityRange() {
 	return rawDataPointsIntensityRange;
 }
 
-boost::numberic::interval<double> Chromatogram::getRawDataPointsMZRange() {
+boost::numeric::interval<double> Chromatogram::getRawDataPointsMZRange() {
 	return rawDataPointsMZRange;
 }
 
-boost::numberic::interval<double> Chromatogram::getRawDataPointsRTRange() {
+boost::numeric::interval<double> Chromatogram::getRawDataPointsRTRange() {
 	return rawDataPointsRTRange;
 }
 
