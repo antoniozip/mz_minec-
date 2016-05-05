@@ -154,23 +154,17 @@ void Chromatogram::finishChromatogram() {
 
 	// Update area
 	area = 0;
-	for (int i = 1; i < allScanNumbers.length; i++) {
+	for (int i = 1; i < allScanNumbers.size(); i++) {
 		// For area calculation, we use retention time in seconds
-		double previousRT = dataFile.getScan(allScanNumbers[i - 1])
-			.getRetentionTime() * 60d;
-		double currentRT = dataFile.getScan(allScanNumbers[i])
-			.getRetentionTime() * 60d;
-		double previousHeight = dataPointsMap.get(allScanNumbers[i - 1])
-			.getIntensity();
-		double currentHeight = dataPointsMap.get(allScanNumbers[i])
-			.getIntensity();
-		area += (currentRT - previousRT) * (currentHeight + previousHeight)
-			/ 2;
+		double previousRT = dataFile.getScan(allScanNumbers[i - 1]).getRetentionTime() * 60d;
+		double currentRT = dataFile.getScan(allScanNumbers[i]).getRetentionTime() * 60d;
+		double previousHeight = dataPointsMap.get(allScanNumbers[i - 1]).getIntensity();
+		double currentHeight = dataPointsMap.get(allScanNumbers[i]).getIntensity();
+		area += (currentRT - previousRT) * (currentHeight + previousHeight)/ 2;
 	}
 
 	// Update fragment scan
-	fragmentScan = ScanUtils.findBestFragmentScan(dataFile,
-		dataFile.getDataRTRange(1), rawDataPointsMZRange);
+	fragmentScan = ScanUtils.findBestFragmentScan(dataFile,	dataFile.getDataRTRange(1), rawDataPointsMZRange);
 
 	if (fragmentScan > 0) {
 		Scan fragmentScanObject = dataFile.getScan(fragmentScan);
@@ -190,5 +184,4 @@ void Chromatogram::finishChromatogram() {
 														   // Discard the fields we don't need anymore
 	buildingSegment = null;
 	lastMzPeak = null;
-
 }
