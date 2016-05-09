@@ -2,8 +2,9 @@
 #include "Scan.h"
 
 
-Scan::Scan()
+Scan::Scan(std::string s)
 {
+	dataFile = RawDataFile(s);
 }
 
 

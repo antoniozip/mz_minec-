@@ -88,7 +88,7 @@ int Chromatogram::getRepresentativeScanNumber() {
 	return representativeScan;
 }
 
-int & Chromatogram::getScanNumbers() {
+std::vector<int>  Chromatogram::getScanNumbers() {
 	return dataFile.getScanNumbers(1);
 }
 
@@ -121,11 +121,10 @@ void Chromatogram::finishChromatogram() {
 		
 	std::sort(allScanNumbers.begin(), allScanNumbers.end());
 
-	
 	std::vector<double> allMzValues;
 	for (int i = 0; i < allScanNumbers.size(); i++) 
 	{
-		allMzValues.push_back(dataPointsMap.[allScanNumbers[i]].getMZ());
+		allMzValues.push_back(dataPointsMap[allScanNumbers[i]].getMz());
 	}
 	mz = calcMedian(allMzValues);
 
@@ -134,10 +133,6 @@ void Chromatogram::finishChromatogram() {
 	for (int i = 0; i < allScanNumbers.size(); i++) {
 
 		DataPoint mzPeak = dataPointsMap[allScanNumbers[i]];
-
-		// Replace the MzPeak instance with an instance of SimpleDataPoint,
-		// to reduce the memory usage. After we finish this Chromatogram, we
-		// don't need the additional data provided by the MzPeak
 
 		dataPointsMap.emplace(allScanNumbers[i], mzPeak);
 
@@ -159,7 +154,7 @@ void Chromatogram::finishChromatogram() {
 
 	// Update area
 	area = 0;
-	for (int i = 1; i < allScanNumbers.size(); i++) {
+	for (int i = 1; i <= allScanNumbers.size(); i++) {
 		// For area calculation, we use retention time in seconds
 		double previousRT = dataFile.getScan(allScanNumbers[i - 1]).getRetentionTime() * 60.000000;
 		double currentRT = dataFile.getScan(allScanNumbers[i]).getRetentionTime() * 60.000000;

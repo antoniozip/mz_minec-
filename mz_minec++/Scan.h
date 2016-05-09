@@ -3,6 +3,7 @@
 #include "DataPoint.h"
 #include <string>
 #include <boost/numeric/interval.hpp>
+#include <vector>
 
 
 class Scan
@@ -16,11 +17,11 @@ class Scan
 	double precursorMz;
 	char polarity;
 	int precursorCharge;
-	int & fragmentScanNumbers;
-	DataPoint & dataPoints;
+	std::vector<int> fragmentScanNumbers;
+	std::vector<DataPoint> dataPoints;
 	DataPoint highestDataPoint;
 public:
-	Scan();
+	Scan(std::string);
 	~Scan();
 	double getRetentionTime();
 	double getPrecursorMz();

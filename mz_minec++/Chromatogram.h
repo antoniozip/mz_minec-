@@ -42,7 +42,7 @@ public:
 	boost::numeric::interval<double> getRawDataPointsMZRange();
 	boost::numeric::interval<double> getRawDataPointsRTRange();
 	int getRepresentativeScanNumber();
-	int & getScanNumbers();
+	std::vector<int> getScanNumbers();
 	RawDataFile getDataFile();
 	double calcMedian(std::vector<double>);
 	void finishChromatogram();

@@ -12,18 +12,20 @@ ScanUtils::~ScanUtils()
 {
 }
 
-int ScanUtils::findBestFragmentScan(RawDataFile &dataFile, boost::numeric::interval<double> rtRange, boost::numeric::interval<double> mzRange) {
+int ScanUtils::findBestFragmentScan(RawDataFile dataFile, boost::numeric::interval<double> rtRange, boost::numeric::interval<double> mzRange) {
 
 	int bestFragmentScan = -1;
 	double topBasePeak = 0;
 
-	int fragmentScanNumbers[] = (*dataFile).getScanNumbers(2, rtRange);
+	std::vector<int> fragmentScanNumbers = dataFile.getScanNumbers(2, rtRange);
 
 	for (int number : fragmentScanNumbers) {
 
 		Scan scan = dataFile.getScan(number);
-		
-		if (mzRange.lower() < scan.getPrecursorMz() && mzRange.upper() > scan.getPrecursorMz) {
+		double lb = mzRange.lower, up = mzRange.upper, ppp = scan.getPrecursorMz;
+		if (lb < ppp && up > ppp)
+		{
+		//if (mzRange.lower() < scan.getPrecursorMz() && mzRange.upper() > scan.getPrecursorMz) {
 
 			DataPoint basePeak = scan.getHighestDataPoint();
 

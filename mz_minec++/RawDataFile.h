@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <vector>
 #include "Scan.h"
 #include <boost/numeric/interval.hpp>
 
@@ -8,23 +9,24 @@ class RawDataFile
 	std::string name;
 	int numOfScan;
 	int msLevels;
-	int &scanNumbers;
+	std::vector<int> scanNumbers;
 	boost::numeric::interval<double> mzRange;
 	boost::numeric::interval<double> rtRange;
 	double maxBasePeakIntensity;
 	double maxTotalIonCurrent;
 
 public:
+	RawDataFile();
 	RawDataFile(std::string);
 	~RawDataFile();
 	std::string getName();
 	void setName(std::string);
 	int getNumOfScans();
 	int getNumOfScans(int);
-	int & getMsLevels();
-	int & getScanNumbers();
-	int & getScanNumbers(int);
-	int & getScanNumbers(int, boost::numeric::interval<double>);
+	std::vector<int> getMsLevels();
+	std::vector<int> getScanNumbers();
+	std::vector<int> getScanNumbers(int);
+	std::vector<int> getScanNumbers(int, boost::numeric::interval<double>);
 	Scan getScan(int);
 	boost::numeric::interval<double> getDataMZRange();
 	boost::numeric::interval<double> getDataRTRange();
